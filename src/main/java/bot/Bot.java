@@ -53,6 +53,19 @@ public class Bot extends TelegramLongPollingBot {
 
     @SneakyThrows
     private void handleCallback(CallbackQuery callbackQuery) {
+        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+        buttons.add(Arrays.asList(
+                InlineKeyboardButton
+                        .builder()
+                        .text("Пост")
+                        .callbackData("Post")
+                        .build(),
+                InlineKeyboardButton
+                        .builder()
+                        .text("Не постить")
+                        .callbackData("Don`t post")
+                        .build()
+        ));
         Message message = (Message) callbackQuery.getMessage();
         String[] param = callbackQuery.getData().split(" ");
         String action = param[0];
@@ -64,11 +77,25 @@ public class Bot extends TelegramLongPollingBot {
                                 .chatId(message.getChatId().toString())
                                 .text(hideMessage)
                                 .build());
+                execute(
+                        SendMessage
+                                .builder()
+                                .chatId("834911490")
+                                .text(message.getMessageId().toString())
+                                .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
+                                .build()
+                );
                 /*execute(
                         new CopyMessage(
                                 "-1002112191429"
                                 , message.getChatId().toString()
                                 , message.getMessageId()));*/
+            case ("Post"):
+                execute(
+                        new CopyMessage(
+                                "-1002112191429"
+                                , message.getChatId().toString()
+                                , message.getMessageId()));
         }
     }
 
@@ -103,9 +130,9 @@ public class Bot extends TelegramLongPollingBot {
                         return;
                 }
             }
-        } else if (message.hasText()) {
+        } /*else if (message.hasText()) {
             execute(new CopyMessage("-1002112191429" ,message.getChatId().toString(),message.getMessageId()));
-        }
+        }*/
     }
 
     @Override

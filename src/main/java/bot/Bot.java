@@ -4,18 +4,16 @@ import lombok.SneakyThrows;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.CopyMessage;
-import org.telegram.telegrambots.meta.api.methods.ForwardMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,20 +37,14 @@ public class Bot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasCallbackQuery()) {
-            handleCallback(update.getCallbackQuery());
-        }
-        if (update.hasMessage()) {
+            handleCallback(update.getCallbackQuery(), update);
+        } else if (update.hasMessage()) {
             handleMessage(update.getMessage());
-            /*Message message = update.getMessage();
-            if (message.hasText() || message.hasAudio() || message.hasPhoto()) {
-                execute(SendMessage.builder().chatId(message.getChatId().toString()).text(message.getText()).build());
-                execute(new CopyMessage("-1002079851465" ,message.getChatId().toString(),message.getMessageId()));
-            */
         }
     }
 
     @SneakyThrows
-    private void handleCallback(CallbackQuery callbackQuery) {
+    private void handleCallback(CallbackQuery callbackQuery, Update update) {
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
         buttons.add(Arrays.asList(
                 InlineKeyboardButton
@@ -77,6 +69,7 @@ public class Bot extends TelegramLongPollingBot {
                                 .chatId(message.getChatId().toString())
                                 .text(hideMessage)
                                 .build());
+
                 execute(
                         SendMessage
                                 .builder()
@@ -85,6 +78,8 @@ public class Bot extends TelegramLongPollingBot {
                                 .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
                                 .build()
                 );
+
+                break;
                 /*execute(
                         new CopyMessage(
                                 "-1002112191429"
@@ -96,6 +91,7 @@ public class Bot extends TelegramLongPollingBot {
                                 "-1002112191429"
                                 , message.getChatId().toString()
                                 , message.getMessageId()));
+                break;
         }
     }
 
@@ -130,7 +126,9 @@ public class Bot extends TelegramLongPollingBot {
                         return;
                 }
             }
-        } /*else if (message.hasText()) {
+        }
+        execute(EditMessageReplyMarkup.builder().build());
+        /*else if (message.hasText()) {
             execute(new CopyMessage("-1002112191429" ,message.getChatId().toString(),message.getMessageId()));
         }*/
     }

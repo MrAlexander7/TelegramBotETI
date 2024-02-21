@@ -50,16 +50,16 @@ public class Bot extends TelegramLongPollingBot {
                 InlineKeyboardButton
                         .builder()
                         .text("Пост")
-                        .callbackData("Post")
+                        .callbackData("Post:")
                         .build(),
                 InlineKeyboardButton
                         .builder()
                         .text("Не постить")
-                        .callbackData("Don`t post")
+                        .callbackData("Don`t post:")
                         .build()
         ));
         Message message = (Message) callbackQuery.getMessage();
-        String[] param = callbackQuery.getData().split(" ");
+        String[] param = callbackQuery.getData().split(":");
         String action = param[0];
         switch (action) {
             case ("HideMessage"):

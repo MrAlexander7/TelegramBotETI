@@ -60,9 +60,9 @@ public class Handle extends TgBot {
             case ("HideMessage") :
                 execute(SendMessage
                         .builder()
-                        .chatId("834911490")
+                        .chatId("-834911490")
                         .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
-                        .text(callbackQuery.getMessage().toString())
+                        .text(message.getChatId().toString())
                         .build());
                 break;
             case ("Post"):

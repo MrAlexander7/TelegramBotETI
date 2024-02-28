@@ -3,8 +3,6 @@ package bot;
 import lombok.SneakyThrows;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
-import org.telegram.telegrambots.meta.api.methods.ForwardMessage;
-import org.telegram.telegrambots.meta.api.methods.ForwardMessages;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -22,15 +20,18 @@ import java.util.Optional;
 public class Bot extends TelegramLongPollingBot {
 
     int hideM = 0;
+    int hideB = 0;
 
     // text to bot
     String helloMessage = "Привіт, тебе вітає Бот Підслухано ЕТІ. Тут ти можеш надіслати анонімно своє повідомлення (або ж не анонімно)";
     String hideMessage = "Надішліть своє анонімне повідомлення";
     String Message = "Надішліть своє повідомлення";
 
-    String adminID = "834911490";
+    String adminID = "5308141619";
     String oldChatID = "";
+    String oldMessage = "";
     String Name;
+    String Username;
     String groupID = "-1002079851465";
 
     @SneakyThrows
@@ -44,7 +45,6 @@ public class Bot extends TelegramLongPollingBot {
     @SneakyThrows
     @Override
     public void onUpdateReceived(Update update) {
-        //Name = update.getMessage().getFrom().getFirstName();
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
         buttons.add(Arrays.asList(
                 InlineKeyboardButton
@@ -58,7 +58,6 @@ public class Bot extends TelegramLongPollingBot {
                         .callbackData("Don`t post:")
                         .build()
         ));
-
         if (update.hasCallbackQuery()) {
             handleCallback(update.getCallbackQuery());
         } else if (update.hasMessage()) {
@@ -76,27 +75,16 @@ public class Bot extends TelegramLongPollingBot {
                 hideM = 0;
             } else if (update.hasMessage() && hideM == 2) {
                 System.out.println("send message don`t anonim");
-                //int oldUserMessage = ;
                 execute(SendMessage
                         .builder()
                         .text(update.getMessage().getText())
                         .chatId(adminID)
+                        .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
                         .build()
                 );
-                /*execute(new ForwardMessage(
-                        adminID, update.getMessage().getChatId().toString(), update.getMessage().getMessageId()
-                ));*/
+                oldMessage = update.getMessage().getText();
                 hideM = 0;
-            } else if (update.getMessage().getText().equals("Так")) {
-                System.out.println("forward message");
-                execute(SendMessage
-                        .builder()
-                        .chatId(groupID)
-                        .text("Повідомлення від - " + Name + "\n" + update.getMessage().getText())
-                        .build());
-                /*execute(new ForwardMessage(
-                        groupID , adminID, noAnonimMessageUserID
-                ));*/
+                hideB = 1;
             }
         }
     }
@@ -108,6 +96,7 @@ public class Bot extends TelegramLongPollingBot {
         Message message = (Message) callbackQuery.getMessage();
         String[] param = callbackQuery.getData().split(":");
         String action = param[0];
+
 
 
         switch (action) {
@@ -130,16 +119,34 @@ public class Bot extends TelegramLongPollingBot {
                                 .chatId(message.getChatId().toString())
                                 .text(Message)
                                 .build());
+                oldChatID = message.getChatId().toString();
                 hideM = 2;
                 break;
             case ("Post"):
                 System.out.println("post Message");
-                execute(
-                        SendMessage
+                if (hideB == 1) {
+                    if (Username != null) {
+                        execute(SendMessage
                                 .builder()
                                 .chatId(groupID)
-                                .text(message.getText())
+                                .text("Повідомлення від - " + Name + " (@" + Username + ")\n" + oldMessage)
                                 .build());
+                    } else {
+                        execute(SendMessage
+                                .builder()
+                                .chatId(groupID)
+                                .text("Повідомлення від - " + Name + "\n" + oldMessage)
+                                .build());
+                    }
+                    hideB = 0;
+                } else {
+                    execute(
+                            SendMessage
+                                    .builder()
+                                    .chatId(groupID)
+                                    .text(message.getText())
+                                    .build());
+                }
                 break;
             case ("Don`t post"):
                 System.out.println("don`t post message");
@@ -177,9 +184,11 @@ public class Bot extends TelegramLongPollingBot {
                 switch (command) {
                     case ("/start"), ("/next"):
                         Name = message.getFrom().getFirstName();
+                        Username = message.getFrom().getUserName();
                         System.out.println("case command");
                         execute(
-                                SendMessage.builder()
+                                SendMessage
+                                        .builder()
                                         .chatId(message.getChatId())
                                         .text(helloMessage)
                                         .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
